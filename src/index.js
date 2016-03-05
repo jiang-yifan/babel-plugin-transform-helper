@@ -1,9 +1,15 @@
 import  { HelperRemap ,getRelativePath, traverseExportNames } from './HelperRemap';
 export default function (babel){
-  let remap = new HelperRemap(babel);
+  let remap = new HelperRemap(babel), clearTempFile;
   return {
     pre(file){
-      remap.helperFilename = this.opts.helperFilename;
+      let { helperFilename }= this.opts;
+      if (!helperFilename && !clearTempFile) {
+        //remove previous temple file
+        remap.removeTempFile();
+        clearTempFile = true;
+      }
+      remap.helperFilename = helperFilename;
       let sourcePath = file.opts.filename, helperAbsPath = remap.helperAbsPath, relativePath;
       if (sourcePath !== helperAbsPath) {
         relativePath = getRelativePath(sourcePath, helperAbsPath);

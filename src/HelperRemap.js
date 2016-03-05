@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as traverse from './cheapTraverse';
 let babel, helperDefineTemplate, helperImportTemplate, helperRequireTemplate, StringLiteral, Identifier, File, Program;
-let DEF_HELPER_FILE_PATH = '__temp_helper_file.js';
+let DEF_HELPER_FILE_PATH = '.temp_bundle_helpers.js';
 export class HelperRemap {
   constructor(babelCore){
     this.usedHelpers = [];
@@ -22,6 +22,7 @@ export class HelperRemap {
     return filename;
   }
 
+
   set helperFilename(helperFilename){
     let last = this._helperFilename, current = helperFilename || DEF_HELPER_FILE_PATH;
     if (last !== current) {
@@ -35,6 +36,17 @@ export class HelperRemap {
 
   isHelperFile(sourcePath){
     return sourcePath == this.helperAbsPath && this._helperFileExist
+  }
+
+  removeTempFile(){
+    let absPath = path.join(process.cwd(), DEF_HELPER_FILE_PATH);
+    try {
+      fs.unlinkSync(absPath);
+      return true;
+    }
+    catch (ex) {
+      return false;
+    }
   }
 
   useHelper(name, relativePath){
