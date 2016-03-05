@@ -36,7 +36,7 @@ You can specify the helper bundle file path by `helperFilename` property.
 	
 ##How it work
 This plugin write all generated helper code to one module and the original codes require the module instead of calling from local.Let's support we have two class file.
-
+````javascript
 	//Point.js
 	export default class Point extends Array{
 		constructor(x,y){
@@ -61,9 +61,10 @@ This plugin write all generated helper code to one module and the original codes
     		return new Point(this[0],this[1])
 		}
 	}
+````
 
 When transfers ES6 class,import,typeof ... to ES5, babel add helper code in each original file, the `Point.js` will be transfered to
-
+````javascript
 	var _createClass =//..some code
 
 	function _classCallCheck(instance, Constructor){//..some code}
@@ -87,9 +88,10 @@ When transfers ES6 class,import,typeof ... to ES5, babel add helper code in each
     	}]);
 		return Point;
 	}(Array)
+````
 
 If every file adds these same code the size of bundle file used in browser can be extremely larger than the original source file. The helper codes are the same in every file,so we can group them in a moudle and require the module instead of call it from local, which make the `Point.js` like below.
-	
+````js	
 	var Point = function (_Array) {
 		require("../../tempHelper.js").inherits(Point, _Array);
 		function Point(x, y) {
@@ -106,12 +108,12 @@ If every file adds these same code the size of bundle file used in browser can b
 		}]);
 		return Point;
 	}(Array);
-	
+````	
 And generate a file `tempHelper.js`
-
+````js
 	exports.inherits=//..somecode
 	exports.createClass=//..somecode
 	....
-	
+````	
 When `Point.js` and `Rect.js` bundled together, they require the same module and the code size reduced.The temp module file will be write to the working directory and bundled automatically.
 
