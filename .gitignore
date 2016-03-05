@@ -3,6 +3,10 @@ logs
 *.log
 npm-debug.log*
 
+.idea
+
+__temp_helper_file.js
+temp
 # Runtime data
 pids
 *.pid
