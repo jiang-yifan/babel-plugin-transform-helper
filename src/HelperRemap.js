@@ -1,6 +1,7 @@
 import * as babelHelpers from "babel-helpers";
 import * as path from 'path';
 import * as fs from 'fs';
+import * as traverse from './cheapTraverse';
 let babel, helperDefineTemplate, helperImportTemplate, helperRequireTemplate, StringLiteral, Identifier, File, Program;
 let DEF_HELPER_FILE_PATH = '__temp_helper_file.js';
 export class HelperRemap {
@@ -48,11 +49,20 @@ export class HelperRemap {
     }).expression;
   }
 
-  getUsedMethods(){
-    return this.usedHelpers.map(name=>helperDefineTemplate({
-      METHOD_NAME: Identifier(name),
-      METHOD: babelHelpers.get(name)
-    }))
+  getUsedMethods({exclude}={}){
+    if (!Array.isArray(exclude)) {
+      exclude = [];
+    }
+    let ret = [];
+    for (let name of this.usedHelpers) {
+      if (exclude.indexOf(name) == -1) {
+        ret.push(helperDefineTemplate({
+          METHOD_NAME: Identifier(name),
+          METHOD: babelHelpers.get(name)
+        }))
+      }
+    }
+    return ret;
   }
 
   checkHelperPath(filename){
@@ -93,6 +103,7 @@ export function registerBabel(babelCore){
     helperDefineTemplate = template(`exports.METHOD_NAME=METHOD`);
     helperRequireTemplate = template(`require(HELPER_NAMESPACE).METHOD_NAME`);
     helperImportTemplate = template(`require(HELPER_NAMESPACE)`);
+    traverse.registerBabel(babelCore);
   }
   babelRegistered = true;
 }
@@ -102,6 +113,22 @@ export function getRelativePath(from, to){
     relativePath = '.' + path.sep + relativePath;
   }
   return relativePath;
+}
+export function traverseExportNames(topNode){
+  let names = [];
+  traverse.cheapTraverse(topNode, function (node){
+    let left;
+    if (node.type == 'AssignmentExpression' && (left = node.left).type == 'MemberExpression') {
+      let {object,property}=left;
+      if (object.type == 'Identifier' && object.name == 'exports' && property.type == 'Identifier') {
+        if (names.indexOf(property.name == -1)) {
+          names.push(property.name);
+        }
+        return false;
+      }
+    }
+  });
+  return names;
 }
 function printAst(asts){
   let file = new File({ compact: true });

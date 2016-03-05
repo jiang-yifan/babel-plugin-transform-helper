@@ -1,4 +1,4 @@
-import  { HelperRemap ,getRelativePath } from './HelperRemap';
+import  { HelperRemap ,getRelativePath, traverseExportNames } from './HelperRemap';
 export default function (babel){
   let remap = new HelperRemap(babel);
   return {
@@ -20,7 +20,8 @@ export default function (babel){
       Program: {
         exit(path){
           if (remap.isHelperFile(this.file.opts.filename)) {
-            path.pushContainer('body', remap.getUsedMethods());
+            let exclude = traverseExportNames(path.node);
+            path.pushContainer('body', remap.getUsedMethods({ exclude }));
           }
         }
       }
