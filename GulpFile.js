@@ -5,7 +5,18 @@ let gulp = require('gulp');
 
 gulp.task('browser', browserifyScripts({
   src: 'temp/t1/Rect.js',
-  dest: 'temp/build/t1'
+  dest: 'temp/build/t1',
+  extractVariables: '/__\\w+/'
+}));
+gulp.task('extract', browserifyScripts({
+  src: 'temp/extract/index.js',
+  dest: 'temp/build/extract.js',
+  extractVariables: '/__\\w+/'
+}));
+gulp.task('angular', browserifyScripts({
+  src: 'temp/angular2/core.js',
+  dest: 'temp/build/angular2',
+  extractVariables: '/__\\w+/'
 }));
 gulp.task('build:src', function (){
   return gulp.src(['src/**/*.js']).pipe(babel({
@@ -23,8 +34,14 @@ function browserifyScripts(options){
         setup(bundle){
           bundle.transform('babelify', {
             presets: ['es2015'],
+            compact: true,
+            comments: false,
+            sourceMaps: 'inline',
             plugins: [
-              [require('./lib/index.js').default, { helperFilename: options.helperFilename }]
+              [require('./lib/index.js').default, {
+                helperFilename: options.helperFilename,
+                extractVariables: options.extractVariables
+              }]
             ]
           });
         }

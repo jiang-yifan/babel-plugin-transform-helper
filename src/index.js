@@ -1,9 +1,11 @@
-import  { HelperRemap ,getRelativePath, traverseExportNames } from './HelperRemap';
+import {HelperRemap, getRelativePath, traverseExportNames} from './HelperRemap';
+import {register, makeArr, isRefIdentifier} from './register';
 export default function (babel){
+  register(babel);
   let remap = new HelperRemap(babel), clearTempFile;
   return {
     pre(file){
-      let { helperFilename }= this.opts;
+      let { helperFilename, extractVariables }= this.opts;
       if (!helperFilename && !clearTempFile) {
         //remove previous temple file
         remap.removeTempFile();
@@ -15,6 +17,9 @@ export default function (babel){
         relativePath = getRelativePath(sourcePath, helperAbsPath);
         file.set('helperGenerator', remap.helperFactory(relativePath));
       }
+      for (let extractRule of makeArr(extractVariables)) {
+        remap.addExtractRule(extractRule)
+      }
     },
     post(){
       if (remap.shouldRewriteTempFile) {
@@ -23,6 +28,19 @@ export default function (babel){
       }
     },
     visitor: {
+      VariableDeclarator(path){
+        let id = path.get('id').node;
+        if (id.type == 'Identifier' && remap.shouldExtract(id.name)) {
+          remap.defineHelper(id.name, path.get('init').node);
+          path.remove();
+        }
+      },
+      Identifier(path){
+        let generator = this.file.get('helperGenerator'), name = path.node.name;
+        if (isRefIdentifier(path) && generator && remap.shouldExtract(name)) {
+          path.replaceWith(generator(name))
+        }
+      },
       Program: {
         exit(path){
           if (remap.isHelperFile(this.file.opts.filename)) {
