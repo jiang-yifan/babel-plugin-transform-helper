@@ -10,8 +10,9 @@ gulp.task('browser', browserifyScripts({
 }));
 gulp.task('extract', browserifyScripts({
   src: 'temp/extract/index.js',
-  dest: 'temp/build/extract.js',
-  extractVariables: '/__\\w+/'
+  dest: 'temp/build/extract',
+  extractVariables: '/__\\w+/',
+  helperFilename: 'temp/extract-helper.js'
 }));
 gulp.task('angular', browserifyScripts({
   src: 'temp/angular2/core.js',

@@ -1,7 +1,7 @@
 import * as babelHelpers from "babel-helpers";
 import * as path from 'path';
 import * as fs from 'fs';
-import {printAst, cheapTraverse} from './register';
+import { printAst, cheapTraverse } from './register';
 let babel, helperDefineTemplate,
   helperImportTemplate,
   helperRequireTemplate,
@@ -12,18 +12,18 @@ let babel, helperDefineTemplate,
 let DEF_HELPER_FILE_PATH = './__temp_bundle_helpers.js';
 
 export class HelperRemap {
-  constructor(babelCore){
+  constructor(babelCore) {
     this.usedHelpers = [];
     this._definedHelpers = {};
     this._extractRules = [];
     registerBabel(babelCore);
   }
 
-  get shouldRewriteTempFile(){
+  get shouldRewriteTempFile() {
     return !this._helperFileExist && this._invalidTempFile;
   }
 
-  get helperAbsPath(){
+  get helperAbsPath() {
     let filename = this.helperFilename;
     if (!path.isAbsolute(filename)) {
       return path.join(process.cwd(), filename);
@@ -31,23 +31,22 @@ export class HelperRemap {
     return filename;
   }
 
-
-  set helperFilename(helperFilename){
+  set helperFilename(helperFilename) {
     let last = this._helperFilename, current = helperFilename || DEF_HELPER_FILE_PATH;
     if (last !== current) {
       this._helperFilename = this.checkHelperPath(current)
     }
   }
 
-  get helperFilename(){
+  get helperFilename() {
     return this._helperFilename;
   }
 
-  isHelperFile(sourcePath){
+  isHelperFile(sourcePath) {
     return path.normalize(sourcePath) == path.normalize(this.helperAbsPath) && this._helperFileExist
   }
 
-  removeTempFile(){
+  removeTempFile() {
     let absPath = path.join(process.cwd(), DEF_HELPER_FILE_PATH);
     try {
       fs.unlinkSync(absPath);
@@ -58,7 +57,7 @@ export class HelperRemap {
     }
   }
 
-  useHelper(name, relativePath){
+  useHelper(name, relativePath) {
     let { usedHelpers }=this;
     if (usedHelpers.indexOf(name) == -1) {
       usedHelpers.push(name);
@@ -71,7 +70,7 @@ export class HelperRemap {
     }).expression;
   }
 
-  getUsedMethods({exclude}={}){
+  getUsedMethods({ exclude }={}) {
     if (!Array.isArray(exclude)) {
       exclude = [];
     }
@@ -88,7 +87,7 @@ export class HelperRemap {
     return ret;
   }
 
-  defineHelper(name, node){
+  defineHelper(name, node) {
     if (babel.types.isNode(node)) {
       this._definedHelpers[name] = node;
     }
@@ -96,10 +95,12 @@ export class HelperRemap {
       throw Error('not a Node');
     }
   }
-  checkHelperPath(filename){
+
+  checkHelperPath(filename) {
     if (!filename) {
       throw Error('filename empty');
     }
+    filename = './' + filename.replace(/\\/g, '/');
     if (path.extname(filename) !== '.js') {
       filename = filename + '.js';
     }
@@ -113,16 +114,16 @@ export class HelperRemap {
     return filename;
   }
 
-  helperFactory(relativePath){
+  helperFactory(relativePath) {
     let self = this;
-    return (name)=>self.useHelper(name, relativePath)
+    return (name) => self.useHelper(name, relativePath)
   }
 
-  writeHelperFile(path){
+  writeHelperFile(path) {
     fs.writeFileSync(path, printAst(this.getUsedMethods()))
   }
 
-  shouldExtract(name){
+  shouldExtract(name) {
     for (let rule of this._extractRules) {
       if (rule(name)) {
         return true;
@@ -131,7 +132,7 @@ export class HelperRemap {
     return false;
   }
 
-  addExtractRule(text){
+  addExtractRule(text) {
     let rule = parseTestFunction(text);
     if (rule) {
       this._extractRules.push(rule);
@@ -141,10 +142,10 @@ export class HelperRemap {
 }
 
 let babelRegistered;
-export function registerBabel(babelCore){
+export function registerBabel(babelCore) {
   if (!babelRegistered) {
     babel = babelCore;
-    let {template,types}=babel;
+    let { template, types }=babel;
     StringLiteral = types.StringLiteral;
     Identifier = types.Identifier;
     File = babel.File;
@@ -155,19 +156,19 @@ export function registerBabel(babelCore){
   }
   babelRegistered = true;
 }
-export function getRelativePath(from, to){
+export function getRelativePath(from, to) {
   let relativePath = path.relative(path.dirname(from), to);
   if (relativePath[0] !== '.') {
     relativePath = '.' + path.sep + relativePath;
   }
   return relativePath;
 }
-export function traverseExportNames(topNode){
+export function traverseExportNames(topNode) {
   let names = [];
-  cheapTraverse(topNode, function (node){
+  cheapTraverse(topNode, function (node) {
     let left;
     if (node.type == 'AssignmentExpression' && (left = node.left).type == 'MemberExpression') {
-      let {object,property}=left;
+      let { object, property }=left;
       if (object.type == 'Identifier' && object.name == 'exports' && property.type == 'Identifier') {
         if (names.indexOf(property.name == -1)) {
           names.push(property.name);
@@ -178,19 +179,19 @@ export function traverseExportNames(topNode){
   });
   return names;
 }
-function parseTestFunction(text){
+function parseTestFunction(text) {
   switch (typeof text) {
     case 'function':
-      return (name)=>text(name);
+      return (name) => text(name);
     case 'string':
       if (/^\/.+\/$/.test(text)) {
         let regExp = new RegExp(text.substring(1, text.length - 1));
-        return name=>regExp.test(name)
+        return name => regExp.test(name)
       }
-      return name=>name === text;
+      return name => name === text;
     default:
       if (text instanceof RegExp) {
-        return name=>text.test(name);
+        return name => text.test(name);
       }
       return;
   }
