@@ -1,6 +1,6 @@
 import {HelperRemap, getRelativePath, traverseExportNames} from './HelperRemap';
 import {register, makeArr, isRefIdentifier} from './register';
-export default function (babel){
+export default function (babel) {
   register(babel);
   let remap = new HelperRemap(babel), clearTempFile;
   return {
@@ -13,8 +13,8 @@ export default function (babel){
       }
       remap.helperFilename = helperFilename;
       let sourcePath = file.opts.filename, helperAbsPath = remap.helperAbsPath, relativePath;
-      if (sourcePath !== helperAbsPath) {
-        relativePath = getRelativePath(sourcePath, helperAbsPath).replace(/\\/g,'/');
+      if (sourcePath !== helperAbsPath &&!remap.isHelperFile(sourcePath)) {
+        relativePath = getRelativePath(sourcePath, helperAbsPath).replace(/\\/g, '/');
         file.set('helperGenerator', remap.helperFactory(relativePath));
       }
       for (let extractRule of makeArr(extractVariables)) {
