@@ -7,7 +7,7 @@ npm-debug.log*
 
 lib
 .__temp_helper_file.js
-.temp_bundle_helpers.js
+__temp_bundle_helpers.js
 temp
 # Runtime data
 pids

@@ -9,7 +9,7 @@ let babel, helperDefineTemplate,
   Identifier,
   File,
   Program;
-let DEF_HELPER_FILE_PATH = '.temp_bundle_helpers.js';
+let DEF_HELPER_FILE_PATH = './__temp_bundle_helpers.js';
 
 export class HelperRemap {
   constructor(babelCore){
@@ -44,7 +44,7 @@ export class HelperRemap {
   }
 
   isHelperFile(sourcePath){
-    return sourcePath == this.helperAbsPath && this._helperFileExist
+    return path.normalize(sourcePath) == path.normalize(this.helperAbsPath) && this._helperFileExist
   }
 
   removeTempFile(){
@@ -62,7 +62,7 @@ export class HelperRemap {
     let { usedHelpers }=this;
     if (usedHelpers.indexOf(name) == -1) {
       usedHelpers.push(name);
-      this.removeTempFile();
+      //this.removeTempFile();
       this._invalidTempFile = true;
     }
     return helperRequireTemplate({

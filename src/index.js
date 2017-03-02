@@ -14,7 +14,7 @@ export default function (babel){
       remap.helperFilename = helperFilename;
       let sourcePath = file.opts.filename, helperAbsPath = remap.helperAbsPath, relativePath;
       if (sourcePath !== helperAbsPath) {
-        relativePath = getRelativePath(sourcePath, helperAbsPath);
+        relativePath = getRelativePath(sourcePath, helperAbsPath).replace(/\\/g,'/');
         file.set('helperGenerator', remap.helperFactory(relativePath));
       }
       for (let extractRule of makeArr(extractVariables)) {
