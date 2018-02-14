@@ -20,7 +20,7 @@ export class HelperRemap {
   }
 
   get shouldRewriteTempFile(){
-    return !this._helperFileExist && this._invalidTempFile;
+    return !this._helperFileExist || this._invalidTempFile;
   }
 
   get helperAbsPath(){
