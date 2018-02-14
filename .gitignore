@@ -5,7 +5,6 @@ npm-debug.log*
 
 .idea
 
-lib
 .__temp_helper_file.js
 __temp_bundle_helpers.js
 temp

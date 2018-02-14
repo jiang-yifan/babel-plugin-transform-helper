@@ -4,6 +4,7 @@
   "description": "Transform babel helper code to reduce transformed code size",
   "main": "lib/index.js",
   "scripts": {
+    "build": "gulp build:src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
